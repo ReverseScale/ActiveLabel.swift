@@ -342,7 +342,9 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         var textString = attrString.string
         var textLength = textString.utf16.count
         var textRange = NSRange(location: 0, length: textLength)
-        
+
+        var addedElements = [ElementTuple]()
+
         if enabledTypes.contains(.url) {
             let tuple = ActiveBuilder.createURLElements(from: textString, range: textRange, maximumLength: urlMaximumLength)
             let urlElements = tuple.0
@@ -351,8 +353,10 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             textLength = textString.utf16.count
             textRange = NSRange(location: 0, length: textLength)
             activeElements[.url] = urlElements
+
+            addedElements.append(contentsOf: urlElements)
         }
-        
+
         for type in enabledTypes where type != .url {
             var filter: ((String) -> Bool)? = nil
             if type == .mention {
@@ -360,10 +364,22 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             } else if type == .hashtag {
                 filter = hashtagFilterPredicate
             }
-            let hashtagElements = ActiveBuilder.createElements(type: type, from: textString, range: textRange, filterPredicate: filter)
+            var hashtagElements = ActiveBuilder.createElements(type: type, from: textString, range: textRange, filterPredicate: filter)
+
+            //UPDATED: filter already added elements
+            for (i, hashElement) in hashtagElements.enumerated().reversed() {
+                if let _ = addedElements.firstIndex(where: { (element) -> Bool in
+                    let intersection = NSIntersectionRange(element.range, hashElement.range)
+                    return intersection.length != 0
+                }) {
+                    hashtagElements.remove(at: i)
+                }
+            }
+
             activeElements[type] = hashtagElements
+            addedElements.append(contentsOf: hashtagElements)
         }
-        
+
         return textString
     }
     
