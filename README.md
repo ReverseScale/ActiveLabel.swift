@@ -13,8 +13,7 @@ UILabel drop-in replacement supporting Hashtags (#), Mentions (@), URLs (http://
 * Works as `UILabel` drop-in replacement
 * Well tested and documented
 
-![](ActiveLabelDemo/demo.gif)
-
+![](https://s1.ax1x.com/2020/04/08/GW6zGR.gif)
 
 ## Install (iOS 10+)
 
