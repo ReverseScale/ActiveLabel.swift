@@ -13,6 +13,8 @@ enum ActiveElement {
     case hashtag(String)
     case url(original: String, trimmed: String)
     case custom(String)
+    case emoji(range: NSRange, name: String, onImage: ((_ word: String) -> UIImage?)?)
+
     
     static func create(with activeType: ActiveType, text: String) -> ActiveElement {
         switch activeType {
@@ -20,6 +22,7 @@ enum ActiveElement {
         case .hashtag: return hashtag(text)
         case .url: return url(original: text, trimmed: text)
         case .custom: return custom(text)
+        case .emoji(_, let onImage): return emoji(range: NSRange(), name: text, onImage: onImage)
         }
     }
 }
@@ -29,6 +32,8 @@ public enum ActiveType {
     case hashtag
     case url
     case custom(pattern: String)
+    case emoji(pattern: String, onImage: ((_ word: String) -> UIImage?)?)
+
     
     var pattern: String {
         switch self {
@@ -36,6 +41,8 @@ public enum ActiveType {
         case .hashtag: return RegexParser.hashtagPattern
         case .url: return RegexParser.urlPattern
         case .custom(let regex): return regex
+            case .emoji(let regex, _): return regex
+
         }
     }
 }
@@ -47,6 +54,7 @@ extension ActiveType: Hashable, Equatable {
         case .hashtag: hasher.combine(-2)
         case .url: hasher.combine(-3)
         case .custom(let regex): hasher.combine(regex)
+        case .emoji(let regex, _): hasher.combine(regex)
         }
     }
 }
@@ -57,6 +65,7 @@ public func ==(lhs: ActiveType, rhs: ActiveType) -> Bool {
     case (.hashtag, .hashtag): return true
     case (.url, .url): return true
     case (.custom(let pattern1), .custom(let pattern2)): return pattern1 == pattern2
+        case (.emoji(let pattern1, _), .emoji(let pattern2, _)): return pattern1 == pattern2
     default: return false
     }
 }

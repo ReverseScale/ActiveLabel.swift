@@ -20,16 +20,23 @@ class ViewController: UIViewController {
         let customType2 = ActiveType.custom(pattern: "\\sit\\b") //Looks for "it"
         let customType3 = ActiveType.custom(pattern: "\\ssupports\\b") //Looks for "supports"
 
+        let emojiType = ActiveType.emoji(pattern: ":(\\w+):") { word  in
+            return UIImage(named: "ghost")
+        }
+
         label.enabledTypes.append(customType)
         label.enabledTypes.append(customType2)
         label.enabledTypes.append(customType3)
+
+        label.enabledTypes.append(emojiType)
 
         label.urlMaximumLength = 31
 
         label.customize { label in
             label.text = "This is a post with #multiple #hashtags and a @userhandle. Links are also supported like" +
             " this one: http://optonaut.co. Now it also supports custom patterns -> are\n\n" +
-                "Let's trim a long link: \nhttps://twitter.com/twicket_app/status/649678392372121601"
+                "Let's trim a long link: \nhttps://twitter.com/twicket_app/status/649678392372121601" +
+                "I'm so scary :ghost: "
             label.numberOfLines = 0
             label.lineSpacing = 4
             
@@ -43,8 +50,7 @@ class ViewController: UIViewController {
             label.handleHashtagTap { self.alert("Hashtag", message: $0) }
             label.handleURLTap { self.alert("URL", message: $0.absoluteString) }
 
-            //Custom types
-
+            // Custom types
             label.customColor[customType] = UIColor.purple
             label.customSelectedColor[customType] = UIColor.green
             label.customColor[customType2] = UIColor.magenta
@@ -64,11 +70,13 @@ class ViewController: UIViewController {
             label.handleCustomTap(for: customType) { self.alert("Custom type", message: $0) }
             label.handleCustomTap(for: customType2) { self.alert("Custom type", message: $0) }
             label.handleCustomTap(for: customType3) { self.alert("Custom type", message: $0) }
+            label.handleEmojiTap(for: emojiType) { (imageName, (String) -> UIImage?) in
+                self.alert("Emoji type", imageName)
+            }
         }
 
         label.frame = CGRect(x: 20, y: 40, width: view.frame.width - 40, height: 300)
         view.addSubview(label)
-        
         
         // Do any additional setup after loading the view, typically from a nib.
     }
